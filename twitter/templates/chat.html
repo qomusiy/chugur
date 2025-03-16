@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chug'ur-chug'ur</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/226/226235.png" type="image/png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f0f2f5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #333;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fff;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e6ecf0;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            z-index: 10;
+        }
+        .brand {
+            font-size: clamp(1.2rem, 3vw, 1.5rem);
+            font-weight: bold;
+            color: #1da1f2;
+        }
+        .brand .username {
+            color: #0d8ddb;
+        }
+        .messages {
+            flex-grow: 1;
+            padding: 80px 20px 100px;
+            overflow-y: auto;
+            background: radial-gradient(circle, rgba(29, 161, 242, 0.1) 10%, transparent 10%);
+            background-size: 20px 20px;
+        }
+        .message {
+            display: flex;
+            align-items: flex-start;
+            margin: 15px 0;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 15px;
+            max-width: 80%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+        .message:hover {
+            background-color: #f9f9f9;
+        }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background-color: #1da1f2;
+            border-radius: 50%;
+            margin-right: 15px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .message-content {
+            flex-grow: 1;
+        }
+        .username {
+            font-weight: bold;
+            font-size: 14px;
+            color: #1da1f2;
+            margin: 0;
+        }
+        .text {
+            margin: 5px 0;
+            word-wrap: break-word;
+            font-size: 16px;
+        }
+        .time {
+            font-size: 12px;
+            color: #777;
+        }
+        .message-actions {
+            display: none; /* Hidden by default */
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #fff;
+            border: 1px solid #e6ecf0;
+            border-radius: 10px;
+            padding: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            z-index: 5;
+        }
+        .message-actions.active {
+            display: flex;
+            gap: 10px;
+        }
+        .action-btn {
+            padding: 5px 10px;
+            background-color: #1da1f2;
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .action-btn:hover {
+            background-color: #0d8ddb;
+            transform: scale(1.05);
+        }
+        .action-btn.delete {
+            background-color: #e0245e;
+        }
+        .action-btn.delete:hover {
+            background-color: #c81e50;
+        }
+        .message-input {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            padding: 15px 20px;
+            background-color: #fff;
+            border-top: 1px solid #e6ecf0;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05);
+            z-index: 10;
+        }
+        .message-input form {
+            display: flex;
+            align-items: center;
+            background-color: #f0f2f5;
+            border-radius: 25px;
+            padding: 5px 5px 5px 15px;
+        }
+        .message-input textarea {
+            flex-grow: 1;
+            padding: 10px 0;
+            border: none;
+            border-radius: 20px;
+            resize: none;
+            height: 40px;
+            max-height: 100px;
+            background-color: transparent;
+            font-size: 16px;
+            outline: none;
+            line-height: 1.5;
+        }
+        .message-input textarea:focus {
+            background-color: transparent;
+        }
+        .send-button {
+            width: 40px;
+            height: 40px;
+            background-color: #1da1f2;
+            color: white;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background-color 0.3s ease;
+        }
+        .send-button:hover {
+            background-color: #0d8ddb;
+        }
+        .error {
+            color: #ea2d2d;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .menu-container {
+            position: relative;
+        }
+        .menu-icon {
+            font-size: 24px;
+            cursor: pointer;
+            color: #333;
+            padding: 5px;
+            transition: color 0.3s ease;
+        }
+        .menu-icon:hover {
+            color: #1da1f2;
+        }
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background-color: #fff;
+            border: 1px solid #e6ecf0;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            min-width: 200px;
+            padding: 10px;
+            z-index: 10;
+        }
+        .dropdown-menu.active {
+            display: block;
+        }
+        .dropdown-menu a {
+            display: block;
+            padding: 10px 15px;
+            text-decoration: none;
+            color: #333;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+        .dropdown-menu a:hover {
+            background-color: #f0f2f5;
+            color: #1da1f2;
+        }
+        .search-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+        }
+        .search-bar input {
+            flex-grow: 1;
+            padding: 8px 12px;
+            border: 1px solid #e6ecf0;
+            border-radius: 20px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+        .search-bar input:focus {
+            border-color: #1da1f2;
+        }
+        .search-bar button {
+            padding: 8px 15px;
+            background-color: #1da1f2;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .search-bar button:hover {
+            background-color: #0d8ddb;
+        }
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            header {
+                padding: 10px 15px;
+            }
+            .brand {
+                font-size: 1rem;
+            }
+            .messages {
+                padding: 60px 10px 80px;
+            }
+            .message {
+                max-width: 90%;
+                padding: 10px;
+            }
+            .avatar {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+            .username, .text {
+                font-size: 14px;
+            }
+            .time {
+                font-size: 10px;
+            }
+            .message-actions {
+                bottom: -35px;
+            }
+            .action-btn {
+                padding: 4px 8px;
+                font-size: 10px;
+            }
+            .message-input {
+                padding: 10px 15px;
+            }
+            .message-input textarea {
+                font-size: 14px;
+            }
+            .send-button {
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="brand"><span class="username" style="background-color: #e5e4e4;border-radius: 5px; color: #333; font-size: 16px;">@{{ user.username }}</span> | Bu Chug'ur-chug'ur!</div>
+        <div class="menu-container">
+            <span class="menu-icon"><i class="fa-solid fa-ellipsis-vertical"></i></span>
+            <div class="dropdown-menu">
+                <a href="{% url 'update' %}">Profil yangilash</a>
+                <a href="{% url 'delete' %}">Profil o'chirish</a>
+                <a href="{% url 'logout' %}">Chiqish</a>
+                <form method="get" class="search-bar">
+                    <input type="text" name="t" placeholder="Nima kerak....">
+                    <button>Qidirish</button>
+                </form>
+            </div>
+        </div>
+    </header>
+    <div class="messages">
+        {% for c in comments %}
+        <div class="message" data-id="{{ c.id }}">
+            <div class="avatar">{{ c.writer|slice:"0:1"|upper }}</div>
+            <div class="message-content">
+                <p class="username">@{{ c.writer }}</p>
+                <p class="text">{{ c.itself }}</p>
+                <span class="time">{{ c.sent_date }}</span>
+            </div>
+            <div class="message-actions">
+                {% if c.writer == user.username %}
+                <button class="action-btn edit"><a style="color: #fff;" href="{% url 'editcomment' c.id %}">Tahrirlash</a></button>
+                <button class="action-btn delete"><a style="color: #fff;" href="{% url 'deletecomment' c.id %}">O'chirish</a></button>
+                <button class="action-btn copy">Nusxa olish</button>
+                {% else %}
+                <button class="action-btn copy">Nusxa olish</button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="message-input">
+        {% if form.errors %}
+            <div class="error">{{ form.errors }}</div>
+        {% endif %}
+        <form method="post" action="{% url 'sendcomment' %}">
+            {% csrf_token %}
+            {{ form.itself }}
+            <button type="submit" class="send-button"><i class="fa-solid fa-arrow-up"></i></button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-resize textarea
+            const textarea = document.querySelector('.message-input textarea');
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = this.scrollHeight + 'px';
+            });
+
+            // Dropdown menu toggle
+            const menuIcon = document.querySelector('.menu-icon');
+            const dropdownMenu = document.querySelector('.dropdown-menu');
+            const menuContainer = document.querySelector('.menu-container');
+            menuIcon.addEventListener('click', function(e) {
+                e.stopPropagation();
+                dropdownMenu.classList.toggle('active');
+            });
+            document.addEventListener('click', function(event) {
+                if (!menuContainer.contains(event.target)) {
+                    dropdownMenu.classList.remove('active');
+                }
+            });
+
+            // Message actions toggle
+            const messages = document.querySelectorAll('.message');
+            messages.forEach(message => {
+                message.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const actions = this.querySelector('.message-actions');
+                    // Hide all other actions
+                    document.querySelectorAll('.message-actions.active').forEach(other => {
+                        if (other !== actions) other.classList.remove('active');
+                    });
+                    actions.classList.toggle('active');
+                });
+            });
+
+            // Close actions when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!event.target.closest('.message')) {
+                    document.querySelectorAll('.message-actions.active').forEach(actions => {
+                        actions.classList.remove('active');
+                    });
+                }
+            });
+
+            // Action button functionality
+            document.querySelectorAll('.action-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const message = this.closest('.message');
+                    const messageId = message.getAttribute('data-id');
+                    const text = message.querySelector('.text').textContent;
+
+                    if (this.classList.contains('edit')) {
+                        // const newText = prompt('Xabarni tahrirlash:', text);
+                        // if (newText) {
+                        //     // AJAX or form submission for edit (placeholder)
+                        //     console.log(`Edit message ${messageId}: ${newText}`);
+                        // }
+                        pass
+                    } else if (this.classList.contains('delete')) {
+                        // if (confirm('Xabarni o\'chirishni xohlaysizmi?')) {
+                        //     // AJAX or form submission for delete (placeholder)
+                        //     console.log(`Delete message ${messageId}`);
+                        // }
+                        pass
+                    } else if (this.classList.contains('copy')) {
+                        navigator.clipboard.writeText(text).then(() => {
+                            alert('Xabar nusxa olindi!');
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
